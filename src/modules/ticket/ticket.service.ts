@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
@@ -10,19 +14,39 @@ export class TicketService {
 
   async createTicket(body: CreateTicketDto) {
     const { ma_lich_chieu, danhSachVe } = body;
+    if (!ma_lich_chieu || danhSachVe.length === 0)
+      throw new BadRequestException('Thông tin truyền vào không phù hợp!');
+
     await Promise.all(
-      danhSachVe.map((ve) => {
+      danhSachVe.map(async (ve) => {
+        if (!ve.ma_ghe || !ve.tai_khoan)
+          throw new BadRequestException('Thông tin truyền vào không phù hợp!');
+
+        const existingTicket = await this.prisma.datVe.findFirst({
+          where: {
+            ma_lich_chieu: ma_lich_chieu,
+            ma_ghe: ve.ma_ghe,
+            tai_khoan: ve.tai_khoan,
+          },
+        });
+
+        if (existingTicket)
+          throw new BadRequestException(`Đặt vé bị lỗi, vui lòng thử lại!`);
         // console.log(ve);
-        return this.prisma.datVe.create({
+        let newTicket = await this.prisma.datVe.create({
           data: {
             ma_lich_chieu: ma_lich_chieu,
             ma_ghe: ve.ma_ghe,
             tai_khoan: ve.tai_khoan,
           },
         });
+        if (!newTicket) throw new BadRequestException('Không thể tạo vé!');
+
+        return newTicket;
       }),
     );
-    return { ma_lich_chieu, danhSachVe: danhSachVe || [] };
+
+    return { ma_lich_chieu, danhSachVe: danhSachVe };
   }
 
   async findAll(maLichChieu: number) {
@@ -44,10 +68,10 @@ export class TicketService {
       },
     });
 
-    console.log(lichChieu);
+    // console.log(lichChieu);
 
     if (lichChieu.length === 0)
-      throw new BadRequestException('Không tìm thấy lịch chiếu!');
+      throw new NotFoundException('Không tìm thấy lịch chiếu!');
 
     const danhSachGhe = await this.prisma.ghe.findMany({
       where: {
@@ -59,25 +83,42 @@ export class TicketService {
         ma_ghe: true,
       },
     });
+
+    if (!danhSachGhe) throw new NotFoundException('Không tìm thấy thông tin!');
+
     return {
-      lichChieu: lichChieu || [],
-      danhSachGhe: danhSachGhe || [],
+      lichChieu: lichChieu,
+      danhSachGhe: danhSachGhe,
     };
   }
 
   async createSchedule(body: CreateScheduleDto) {
     const { ma_phim, ngay_gio_chieu, ma_rap, gia_ve } = body;
 
+    if (!ma_phim || !ngay_gio_chieu || !ma_rap || !gia_ve)
+      throw new BadRequestException('Thông tin truyền vào không phù hợp!');
+
+    const existSchedule = await this.prisma.lichChieu.findFirst({
+      where: {
+        ma_phim: ma_phim,
+        ma_rap: ma_rap,
+      },
+    });
+
+    if (existSchedule)
+      throw new BadRequestException('Đã tồn tại lịch chiếu này!');
+
     const newSchedule = await this.prisma.lichChieu.create({
       data: {
         ma_phim: ma_phim,
-        ngay_gio_chieu: ngay_gio_chieu,
+        ngay_gio_chieu: new Date(ngay_gio_chieu),
         ma_rap: ma_rap,
         gia_ve: gia_ve,
       },
     });
 
-    return { newSchedule: newSchedule || [] };
+    if (!newSchedule) throw new NotFoundException('Không tìm thấy thông tin!');
+    return { newSchedule: newSchedule };
   }
 
   update(id: number, updateTicketDto: UpdateTicketDto) {

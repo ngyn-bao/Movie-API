@@ -6,7 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './modules/auth/jwt.auth.guard';
 import { ResponseInterceptor } from './common/interceptor/response.interceptor';
 
-async function bootstrap() {
+async function movie() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
@@ -28,7 +28,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000, () => {
-    console.log('Đây là dự án chạy trên PORT ' + process.env.PORT);
+    console.log('Dự án đang chạy!');
   });
 }
-bootstrap();
+movie();

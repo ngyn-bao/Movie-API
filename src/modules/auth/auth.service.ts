@@ -16,9 +16,10 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { email, mat_khau, ho_ten, so_dien_thoai } = registerDto;
+    const { email, mat_khau, ho_ten, so_dien_thoai, ma_loai_nguoi_dung } =
+      registerDto;
     if (!email || !mat_khau || !ho_ten || !so_dien_thoai) {
-      console.log({ email, mat_khau, ho_ten, so_dien_thoai });
+      // console.log({ email, mat_khau, ho_ten, so_dien_thoai });
       throw new BadRequestException('Dữ liệu truyền vào không phù hợp!');
     }
 
@@ -38,6 +39,7 @@ export class AuthService {
           mat_khau: hashedPassword,
           ho_ten: ho_ten,
           so_dt: so_dien_thoai,
+          ma_loai_nguoi_dung: ma_loai_nguoi_dung ? ma_loai_nguoi_dung : 2,
         },
       });
       return {
@@ -45,7 +47,7 @@ export class AuthService {
         email: newUser.email,
         ho_ten: newUser.ho_ten,
         so_dt: newUser.so_dt,
-        loai_nguoi_dung: newUser.loai_nguoi_dung,
+        ma_loai_nguoi_dung: newUser.ma_loai_nguoi_dung,
       };
     }
   }

@@ -40,16 +40,26 @@ export class MovieController {
   }
 
   @Get('thong-tin-phim/:id')
-  detailMovie(@Param('maPhim') id: number) {
+  detailMovie(@Param('id') id: number) {
     return this.movieService.detailMovie(id);
   }
 
-  @Get('lay-phim')
+  @Get('lay-phim-phan-trang')
   findMoviePagination(
     @Query('page') page: number,
     @Query('pageSize') pageSize: number,
   ) {
     return this.movieService.findMoviePagination(page, pageSize);
+  }
+
+  @Get('lay-phim-theo-ngay')
+  findMovieByDay(
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
+    @Query('tuNgay') tuNgay: string,
+    @Query('denNgay') denNgay: string,
+  ) {
+    return this.movieService.findMovieByDay(page, pageSize, tuNgay, denNgay);
   }
 
   @Post('upload-hinh')
@@ -58,24 +68,16 @@ export class MovieController {
     @Body() body: UpdateMovieDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (!file) {
-      throw new BadRequestException('Không có file nào được upload!');
-    }
-
     return this.movieService.uploadHinh(body, file);
   }
 
   @UseGuards(AuthGuard('protect'))
   @Post('cap-nhat-phim')
   @UseInterceptors(FileInterceptor('hinh_anh'))
-  capnhatPhim(
+  capNhatPhim(
     @Body() body: UpdateMovieDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (!file) {
-      throw new BadRequestException('Không có file nào được upload!');
-    }
-
     return this.movieService.uploadHinh(body, file);
   }
 
@@ -85,8 +87,8 @@ export class MovieController {
   }
 
   @UseGuards(AuthGuard('protect'))
-  @Delete(':id')
-  remove(@Param('maPhim') id: number) {
-    return this.movieService.remove(+id);
+  @Delete('xoa-phim/:id')
+  remove(@Param('id') id: number) {
+    return this.movieService.remove(id);
   }
 }

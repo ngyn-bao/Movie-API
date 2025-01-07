@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTheaterDto } from './dto/create-theater.dto';
 import { UpdateTheaterDto } from './dto/update-theater.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
@@ -24,7 +28,9 @@ export class TheaterService {
       },
     });
 
-    return heThongRap || [];
+    if (!heThongRap) throw new NotFoundException('Không tìm thấy thông tin!');
+
+    return heThongRap;
   }
 
   async findCumRap(maHeThongRap: number) {
@@ -36,7 +42,8 @@ export class TheaterService {
       include: { HeThongRap: true },
     });
 
-    return cumRap || [];
+    if (!cumRap) throw new NotFoundException('Không tìm thấy thông tin!');
+    return cumRap;
   }
 
   async findLichChieuRap(maHeThongRap: number) {
@@ -62,19 +69,28 @@ export class TheaterService {
       },
     });
 
-    return lichChieuRap || [];
+    if (!lichChieuRap) throw new NotFoundException('Không tìm thấy thông tin!');
+
+    return lichChieuRap;
   }
 
   async findLichChieuPhim(maPhim: number) {
     if (!maPhim) throw new BadRequestException('Mã phim không được bỏ trống!');
 
+    const existMovie = await this.prisma.phim.findUnique({
+      where: { ma_phim: +maPhim },
+    });
+    if (!existMovie) throw new NotFoundException('Không tìm thấy phim!');
+
     const lichChieuPhim = await this.prisma.lichChieu.findMany({
-      where: { ma_phim: maPhim },
+      where: { ma_phim: +maPhim },
       include: {
         Phim: true,
       },
     });
 
-    return lichChieuPhim || [];
+    if (!lichChieuPhim)
+      throw new NotFoundException('Không tìm thấy thông tin!');
+    return lichChieuPhim;
   }
 }

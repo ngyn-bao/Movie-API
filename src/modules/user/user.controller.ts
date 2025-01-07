@@ -59,14 +59,20 @@ export class UserController {
 
   @UseGuards(AuthGuard('protect'))
   @Post('thong-tin-tai-khoan')
-  userInfo(@Headers() token: string) {
+  userInfo(@Headers('token') token: string) {
     return this.userService.userInfo(token);
   }
 
   @UseGuards(AuthGuard('protect'))
   @Post('lay-thong-tin')
-  takeUserInfo(@Query('taiKhoan') taiKhoan: number, @Headers() token: string) {
+  takeUserInfo(@Query('taiKhoan') taiKhoan: number) {
     return this.userService.takeUserInfo(taiKhoan);
+  }
+
+  @UseGuards(AuthGuard('protect'))
+  @Post('cap-nhat-nguoi-dung/:id')
+  updatePost(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(+id, updateUserDto);
   }
 
   @UseGuards(AuthGuard('protect'))

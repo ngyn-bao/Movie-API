@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
@@ -31,7 +35,7 @@ export class MovieService {
     pageSize = +pageSize > 0 ? +pageSize : 3;
     page = +page > 0 ? +page : 1;
     const skip = (page - 1) * pageSize;
-    const totalItems = await this.prisma.nguoiDung.count();
+    const totalItems = await this.prisma.phim.count();
     const totalPages = Math.ceil(totalItems / pageSize);
 
     const result = await this.prisma.phim.findMany({
@@ -52,6 +56,22 @@ export class MovieService {
   }
 
   async uploadHinh(body: UpdateMovieDto, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Không có file nào được upload!');
+    }
+    // console.log(body);
+    const {
+      ma_phim,
+      ten_phim,
+      trailer,
+      mo_ta,
+      ngay_khoi_chieu,
+      danh_gia,
+      hot,
+      dang_chieu,
+      sap_chieu,
+    } = body;
+
     const uploadResult = await this.cloudinaryService.uploadFile(file);
 
     if (!uploadResult || !uploadResult.secure_url)
@@ -59,22 +79,73 @@ export class MovieService {
 
     const updatedMovie = await this.prisma.phim.update({
       where: {
-        ma_phim: +body.ma_phim,
+        ma_phim: +ma_phim,
       },
       data: {
-        ten_phim: body.ten_phim,
-        trailer: body.trailer,
+        ten_phim: ten_phim,
+        trailer: trailer,
         hinh_anh: uploadResult.secure_url,
-        mo_ta: body.mo_ta,
-        ngay_khoi_chieu: body.ngay_khoi_chieu,
-        danh_gia: body.danh_gia,
-        hot: body.hot,
-        dang_chieu: body.dang_chieu,
-        sap_chieu: body.sap_chieu,
+        mo_ta: mo_ta,
+        ngay_khoi_chieu: new Date(ngay_khoi_chieu),
+        danh_gia: +danh_gia,
+        hot: hot === 'true' ? true : false,
+        dang_chieu: dang_chieu === 'true' ? true : false,
+        sap_chieu: sap_chieu === 'true' ? true : false,
       },
     });
 
     return updatedMovie;
+  }
+
+  async findMovieByDay(
+    page: number,
+    pageSize: number,
+    tuNgay: string,
+    denNgay: string,
+  ) {
+    if (!tuNgay || !denNgay)
+      throw new BadRequestException('Query không hợp lệ!');
+    const fromDate = new Date(tuNgay);
+    const toDate = new Date(denNgay);
+    pageSize = +pageSize > 0 ? +pageSize : 3;
+    page = +page > 0 ? +page : 1;
+    const skip = (page - 1) * pageSize;
+    const totalItems = await this.prisma.phim.count({
+      where: {
+        ngay_khoi_chieu: {
+          gte: fromDate,
+          lte: toDate,
+        },
+      },
+    });
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    if (!fromDate || !toDate)
+      throw new BadRequestException('Ngày không hợp lê!');
+
+    const movieList = await this.prisma.phim.findMany({
+      where: {
+        ngay_khoi_chieu: {
+          gte: fromDate,
+          lte: toDate,
+        },
+      },
+      take: pageSize,
+      skip: skip,
+      orderBy: {
+        ma_phim: 'asc',
+      },
+    });
+
+    return {
+      page,
+      pageSize,
+      totalPages: totalPages,
+      totalItems: totalItems,
+      fromDate: tuNgay,
+      toDate: denNgay,
+      items: movieList || [],
+    };
   }
 
   update(id: number, updateMovieDto: UpdateMovieDto) {
@@ -87,11 +158,30 @@ export class MovieService {
       include: { Banner: true, LichChieu: true },
     });
 
-    return thongTinPhim || [];
+    if (!thongTinPhim) throw new NotFoundException('Không tìm thấy phim!');
+    return thongTinPhim;
   }
 
-  remove(id: number) {
-    const removedMovie = this.prisma.phim.delete({
+  async remove(id: number) {
+    await this.prisma.banner.deleteMany({
+      where: {
+        ma_phim: +id,
+      },
+    });
+
+    await this.prisma.datVe.deleteMany({
+      where: { LichChieu: { ma_lich_chieu: +id } },
+    });
+
+    await this.prisma.lichChieu.deleteMany({ where: { ma_phim: +id } });
+
+    const existMovie = await this.prisma.phim.findUnique({
+      where: { ma_phim: +id },
+    });
+
+    if (!existMovie) throw new NotFoundException('Không tồn tại phim này!');
+
+    const removedMovie = await this.prisma.phim.delete({
       where: { ma_phim: +id },
       include: { LichChieu: true, Banner: true },
     });

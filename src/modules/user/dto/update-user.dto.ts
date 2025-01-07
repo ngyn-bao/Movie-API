@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
@@ -19,7 +19,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty()
   so_dt: string;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  loai_nguoi_dung: string;
+  ma_loai_nguoi_dung: number;
 }

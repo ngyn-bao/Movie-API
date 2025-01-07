@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 class RegisterDto {
   @IsString()
@@ -17,6 +17,11 @@ class RegisterDto {
   @IsString()
   @ApiProperty()
   so_dien_thoai: string;
+
+  @IsNumber()
+  @ApiProperty()
+  @IsOptional()
+  ma_loai_nguoi_dung: number;
 }
 
 export default RegisterDto;

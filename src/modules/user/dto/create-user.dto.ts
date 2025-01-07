@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -18,7 +18,7 @@ export class CreateUserDto {
   @ApiProperty()
   so_dt: string;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  loai_nguoi_dung: string;
+  ma_loai_nguoi_dung: number;
 }

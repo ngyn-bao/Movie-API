@@ -15,7 +15,7 @@ const storageLocal = diskStorage({
     const extFile = path.extname(file.originalname);
     // console.log(extFile);
     cb(null, 'local' + '-' + uniqueSuffix + extFile);
-    console.log({ file: file.fieldname });
+    // console.log({ file: file.fieldname });
   },
 });
 

@@ -23,19 +23,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'protect') {
   }
 
   async validate(payload: any) {
-    console.log(payload);
+    // console.log(payload);
     const user = await this.prisma.nguoiDung.findUnique({
-      where: { tai_khoan: payload.tai_khoan },
+      where: { tai_khoan: payload.nguoiDung },
     });
 
     if (!user)
       throw new UnauthorizedException(
         'Không tồn tại người dùng này hoặc token sai!',
-      );
-
-    if (user.loai_nguoi_dung !== 'admin')
-      throw new UnauthorizedException(
-        'Người dùng không có quyền hạn để thực hiện hành động này!',
       );
 
     return user;
