@@ -6,8 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { MovieModule } from './modules/movie/movie.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { TheaterModule } from './modules/theater/theater.module';
+import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
