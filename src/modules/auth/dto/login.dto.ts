@@ -3,11 +3,11 @@ import { IsString } from 'class-validator';
 
 class LoginDto {
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: 'abc@gmail.com', description: 'Email' })
   email: string;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: 'abcd', description: 'Mật khẩu' })
   mat_khau: string;
 }
 

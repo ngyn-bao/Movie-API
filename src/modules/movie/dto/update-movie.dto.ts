@@ -12,38 +12,48 @@ import {
 
 export class UpdateMovieDto extends PartialType(CreateMovieDto) {
   @IsNumberString()
-  @ApiProperty()
+  @ApiProperty({ example: '12', description: 'Mã phim' })
   ma_phim: number;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: 'Lật mật', description: 'Tên phim' })
   ten_phim: string;
 
   @IsUrl()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'https://youtubee.com',
+    description: 'Đường dẫn trailer phim',
+  })
   trailer: string;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: 'Phim hay lắm', description: 'Mô tả phim' })
   mo_ta: string;
 
   @IsDateString()
-  @ApiProperty()
+  @ApiProperty({ example: '2024-01-01', description: 'Mật khẩu' })
   ngay_khoi_chieu: string;
 
   @IsNumberString()
-  @ApiProperty()
+  @ApiProperty({ example: '10', description: 'Điểm đánh giá phim' })
   danh_gia: number;
 
   @IsBooleanString()
-  @ApiProperty()
+  @ApiProperty({ example: 'true', description: 'Có đang hot hay không?' })
   hot: string;
 
   @IsBooleanString()
-  @ApiProperty()
+  @ApiProperty({ example: 'false', description: 'Có đang chiếu không' })
   dang_chieu: string;
 
   @IsBooleanString()
-  @ApiProperty()
+  @ApiProperty({ example: 'true', description: 'Có sắp chiếu không' })
   sap_chieu: string;
+
+  @ApiProperty({
+    description: 'Hình ảnh',
+    type: 'string',
+    format: 'binary',
+  })
+  hinh_anh: Express.Multer.File;
 }

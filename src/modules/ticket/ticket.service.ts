@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
-import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 
@@ -17,10 +16,34 @@ export class TicketService {
     if (!ma_lich_chieu || danhSachVe.length === 0)
       throw new BadRequestException('Thông tin truyền vào không phù hợp!');
 
+    const existLichChieu = await this.prisma.lichChieu.findUnique({
+      where: { ma_lich_chieu: ma_lich_chieu },
+    });
+
+    if (!existLichChieu)
+      throw new NotFoundException(
+        `Không tồn tại lịch chiếu với mã ${ma_lich_chieu}`,
+      );
+
     await Promise.all(
       danhSachVe.map(async (ve) => {
         if (!ve.ma_ghe || !ve.tai_khoan)
           throw new BadRequestException('Thông tin truyền vào không phù hợp!');
+
+        const existUser = await this.prisma.nguoiDung.findUnique({
+          where: { tai_khoan: ve.tai_khoan },
+        });
+
+        const existSeat = await this.prisma.ghe.findUnique({
+          where: { ma_ghe: ve.ma_ghe },
+        });
+
+        if (!existUser)
+          throw new NotFoundException(
+            `Không tồn tại người dùng với tài khoản ${ve.tai_khoan}`,
+          );
+        else if (!existSeat)
+          throw new NotFoundException(`Không tồn tại ghế với mã ${ve.ma_ghe} `);
 
         const existingTicket = await this.prisma.datVe.findFirst({
           where: {
@@ -119,13 +142,5 @@ export class TicketService {
 
     if (!newSchedule) throw new NotFoundException('Không tìm thấy thông tin!');
     return { newSchedule: newSchedule };
-  }
-
-  update(id: number, updateTicketDto: UpdateTicketDto) {
-    return `This action updates a #${id} ticket`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} ticket`;
   }
 }

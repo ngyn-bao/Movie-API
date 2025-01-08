@@ -46,6 +46,12 @@ export class UserService {
         so_dt: so_dt,
         ma_loai_nguoi_dung: ma_loai_nguoi_dung,
       },
+      select: {
+        email: true,
+        ho_ten: true,
+        so_dt: true,
+        LoaiNguoiDung: true,
+      },
     });
 
     return newUser;

@@ -20,9 +20,9 @@ async function movie() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   const config = new DocumentBuilder()
-    .setTitle('Capstone Movie')
+    .setTitle('Movie')
     .setDescription('Docs OpenAPI')
-    .setVersion('1.0')
+    .setVersion('1.5')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

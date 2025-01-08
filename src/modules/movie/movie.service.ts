@@ -15,18 +15,17 @@ export class MovieService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  create(createMovieDto: CreateMovieDto) {
-    return 'This action adds a new movie';
-  }
-
   async findBanner() {
     const bannerList = await this.prisma.banner.findMany();
+    if (!bannerList) throw new NotFoundException('Không tìm thấy thông tin!');
 
     return bannerList || [];
   }
 
   async findMovie() {
     const movieList = await this.prisma.phim.findMany();
+
+    if (!movieList) throw new NotFoundException('Không tìm thấy thông tin!');
 
     return movieList || [];
   }
@@ -76,6 +75,15 @@ export class MovieService {
 
     if (!uploadResult || !uploadResult.secure_url)
       throw new BadRequestException('Upload thất bại!');
+
+    const existMovie = await this.prisma.phim.findUnique({
+      where: {
+        ma_phim: +ma_phim,
+      },
+    });
+
+    if (!existMovie)
+      throw new NotFoundException(`Không tìm thấy phim với mã ${ma_phim} `);
 
     const updatedMovie = await this.prisma.phim.update({
       where: {
@@ -146,10 +154,6 @@ export class MovieService {
       toDate: denNgay,
       items: movieList || [],
     };
-  }
-
-  update(id: number, updateMovieDto: UpdateMovieDto) {
-    return `This action updates a #${id} movie`;
   }
 
   async detailMovie(id: number) {
