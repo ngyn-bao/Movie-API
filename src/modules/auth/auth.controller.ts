@@ -1,6 +1,6 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Public } from 'src/common/decorater/public.decorater';
+import { Public } from '../../common/decorater/public.decorater';
 import { Request } from 'express';
 import { ApiOperation } from '@nestjs/swagger';
 import RegisterDto from './dto/register.dto';
